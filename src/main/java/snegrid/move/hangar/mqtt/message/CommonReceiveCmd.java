@@ -1,0 +1,40 @@
+package snegrid.move.hangar.mqtt.message;
+
+import lombok.*;
+
+import java.io.Serializable;
+
+/**
+ * 指令接收 消息体
+ *
+ * @author wangwei
+ */
+@Data
+@ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class CommonReceiveCmd<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 设备编号
+     */
+    private String deviceNumber;
+
+    /**
+     * 指令code
+     */
+    private Integer msgType;
+
+    /**
+     * 登录用户id
+     */
+    private Long sessionId;
+
+    /**
+     * 参数体
+     */
+    private T params;
+}
