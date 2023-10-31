@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import snegrid.move.hangar.business.enums.OrderMuster;
 import snegrid.move.hangar.business.service.L1CacheService;
+import snegrid.move.hangar.config.RedisCache;
 import snegrid.move.hangar.mqtt.MqttClientHangar;
 import snegrid.move.hangar.mqtt.message.CommonSendCmd;
 import snegrid.move.hangar.mqtt.message.HangarTelemetryVo;
@@ -17,6 +18,7 @@ import snegrid.move.hangar.netty.message.MessageUtil;
 import snegrid.move.hangar.netty.model.User;
 import snegrid.move.hangar.system.domain.entity.SysDictData;
 import snegrid.move.hangar.utils.common.DictUtils;
+import snegrid.move.hangar.utils.common.StringUtils;
 import snegrid.move.hangar.utils.spring.SpringUtils;
 
 import javax.validation.constraints.NotNull;
@@ -39,6 +41,8 @@ public class FlyTaskUtil {
     private static final Logger logger = LoggerFactory.getLogger(FlyTaskUtil.class);
 
     private static final L1CacheService l1CacheService = SpringUtils.getBean(L1CacheService.class);
+
+    private static final RedisCache redisCache = SpringUtils.getBean(RedisCache.class);
 
     /**
      * 发送消息到mqtt
@@ -101,6 +105,12 @@ public class FlyTaskUtil {
         if (ObjectUtil.isNotNull(sysDictData) && CollectionUtil.isNotEmpty(sysDictData)) {
             try {
                 HangarTelemetryVo hangarTelemetryVo = (HangarTelemetryVo) l1CacheService.get(SUB_TELEMETRY_TOPIC.replace(POUND, deviceNumber));
+                if (hangarTelemetryVo.getDeviceStatus() != 10) {
+                    map.put(FLAG, false);
+                    map.put(MSG, "机库非待命状态,无法开始飞行任务！");
+                    logger.error("机库非待命状态!");
+                    return map;
+                }
                 for (SysDictData dictData : sysDictData) {
                     if (dictData.getDictValue().equals("MIN_BATTERY")
                             && (Math.min(hangarTelemetryVo.getBatteryPercent11(), hangarTelemetryVo.getBatteryPercent12())) <= Integer.parseInt(dictData.getRemark())) {
@@ -129,7 +139,24 @@ public class FlyTaskUtil {
             }
         } else {
             map.put(FLAG, false);
-            map.put(MSG, "字典表校验条件为空！");
+            map.put(MSG, "字典表drone_box_param校验条件为空！");
+        }
+        return map;
+    }
+
+    /**
+     * 结束飞行任务校验
+     *
+     * @param flyTaskId 飞行任务ID
+     * @return 结果
+     */
+    public static Map<String, Object> endFlyTaskCheck(@NotNull String flyTaskId) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put(FLAG, true);
+        String interruptTaskId = redisCache.getCacheObject("fly_task:interrupt_task:" + flyTaskId);
+        if (StringUtils.isNotNull(interruptTaskId)) {
+            map.put(FLAG, false);
+            map.put(MSG, "无人机已起飞，无法结束飞行任务！");
         }
         return map;
     }

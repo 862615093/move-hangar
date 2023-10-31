@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ import snegrid.move.hangar.utils.fly.FlyTaskUtil;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static snegrid.move.hangar.constant.MagicValue.FLAG;
+import static snegrid.move.hangar.constant.MagicValue.MSG;
 
 /**
  * <p>
@@ -69,8 +73,8 @@ public class FlyTaskServiceImpl extends ServiceImpl<FlyTaskMapper, FlyTask> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Message startTask(User user, String routeId) {
-        logger.info("startTask()方法入参： user=【{}】, routeId=【{}】", user, routeId);
+    public Message startFlyTask(User user, String routeId) {
+        logger.info("startFlyTask()方法入参： user=【{}】, routeId=【{}】", user, routeId);
         try {
             Device hangarDevice = deviceService.getById(routeService.getById(routeId).getHangarId());
             if (ObjectUtil.isNull(hangarDevice))
@@ -96,6 +100,21 @@ public class FlyTaskServiceImpl extends ServiceImpl<FlyTaskMapper, FlyTask> impl
             return MessageUtil.getMessage(user, false, e.getMessage());
         }
         return MessageUtil.getMessage(user, true, "开始任务指令下发成功！");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Message endFlyTask(User user) {
+        logger.info("endFlyTask()方法入参： user=【{}】", user);
+        FlyTask flyTask = this.getLastUnfinishedFlyTask();
+        //1.校验任务是否满足中断条件
+        Map<String, Object> endFlyTaskCheck = FlyTaskUtil.endFlyTaskCheck(flyTask.getId());
+        if (!MapUtils.getBoolean(endFlyTaskCheck, FLAG))
+            return MessageUtil.getMessage(user, false, MapUtils.getString(endFlyTaskCheck, MSG));
+        //2.修改中断字段,结束任务
+        if (!this.lambdaUpdate().eq(FlyTask::getId, flyTask.getId()).set(FlyTask::getIsInterrupt, 1).set(FlyTask::getTaskEndTime, LocalDateTime.now()).update())
+            return MessageUtil.getMessage(user, false, "结束飞行任务记录修改失败！");
+        return MessageUtil.getMessage(user, true, "结束飞行任务指令下发成功！");
     }
 
     @Override
@@ -135,6 +154,13 @@ public class FlyTaskServiceImpl extends ServiceImpl<FlyTaskMapper, FlyTask> impl
         List<FlyTask> flyTaskList = flyTaskMapper.selectList(new LambdaQueryWrapper<FlyTask>().eq(FlyTask::getValid, true).orderByDesc(FlyTask::getCreateTime).last("LIMIT 1"));
         Optional.ofNullable(flyTaskList.get(0)).orElseThrow(() -> new ServiceException("当前飞行任务不存在！"));
         return flyTaskList.get(0);
+    }
+
+    @Override
+    public FlyTask getLastUnfinishedFlyTask() {
+        List<FlyTask> unfinishedFlyTaskList = flyTaskMapper.selectList(new LambdaQueryWrapper<FlyTask>().eq(FlyTask::getValid, true).isNull(FlyTask::getTaskEndTime).orderByDesc(FlyTask::getCreateTime).last("LIMIT 1"));
+        Optional.ofNullable(unfinishedFlyTaskList.get(0)).orElseThrow(() -> new ServiceException("当前未结束飞行任务不存在！"));
+        return unfinishedFlyTaskList.get(0);
     }
 
     @Override

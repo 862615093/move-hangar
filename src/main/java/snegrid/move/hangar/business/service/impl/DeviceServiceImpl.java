@@ -1,5 +1,6 @@
 package snegrid.move.hangar.business.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import snegrid.move.hangar.business.domain.dto.DeviceMatchDTO;
 import snegrid.move.hangar.business.domain.dto.DevicePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Device;
+import snegrid.move.hangar.business.domain.vo.DeviceVideoVO;
 import snegrid.move.hangar.business.domain.vo.HangerDevice;
 import snegrid.move.hangar.business.mapper.DeviceMapper;
 import snegrid.move.hangar.business.service.IDeviceService;
@@ -18,6 +20,7 @@ import snegrid.move.hangar.system.service.ISysUserService;
 import snegrid.move.hangar.utils.common.StringUtils;
 import snegrid.move.hangar.utils.fly.MappingUtil;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,7 +48,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     public List<Device> pageList(DevicePageListDTO dto) {
         List<Device> deviceList = deviceMapper.selectList(new LambdaQueryWrapper<Device>()
                 .eq(StringUtils.isNotEmpty(dto.getDeviceName()), Device::getDeviceName, dto.getDeviceName())
-                .eq(Device::getType, dto.getType())
+                .eq(StringUtils.isNotNull(dto.getType()), Device::getType, dto.getType())
                 .eq(Device::getValid, true)
                 .orderByDesc(Device::getCreateTime));
         deviceList.forEach(this::setLinkedData);
@@ -94,20 +97,21 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int delete(Long id) {
+        Long matchId = deviceMapper.selectById(id).getMatchId();
+        if (ObjectUtil.isNotNull(matchId)) {
+            this.lambdaUpdate().eq(Device::getId, matchId).set(Device::getMatchStatus, 0).update();
+        }
         return deviceMapper.deleteById(id);
     }
 
     @Override
     public int match(DeviceMatchDTO dto) {
-        List<Device> deviceList = deviceMapper.selectList(new LambdaQueryWrapper<Device>()
-                .eq(Device::getType, 1)
-                .eq(Device::getValid, true));
+        List<Device> deviceList = deviceMapper.selectList(new LambdaQueryWrapper<Device>().eq(Device::getType, 1).eq(Device::getValid, true));
         deviceList.forEach(device -> this.lambdaUpdate().eq(Device::getId, dto.getHangarId()).set(Device::getMatchStatus, 0).update());
         this.lambdaUpdate().eq(Device::getId, dto.getHangarId()).set(Device::getMatchId, dto.getDroneId()).update();
         this.lambdaUpdate().eq(Device::getId, dto.getDroneId()).set(Device::getMatchStatus, dto.getMatchStatus()).update();
         return 1;
     }
-
 
     @Override
     public List<HangerDevice> getDeviceListForPublic(HangerDevice dto) {
@@ -118,5 +122,18 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
                 .eq(Device::getValid, true)
                 .orderByDesc(Device::getCreateTime));
         return MappingUtil.copyListProperties(deviceList, HangerDevice::new);
+    }
+
+    @Override
+    public DeviceVideoVO bindVideo() {
+        List<Device> deviceList = deviceMapper.selectList(new LambdaQueryWrapper<Device>().eq(Device::getType, 2));
+        if (deviceList.size() == 0) throw new ServiceException("请先录入一台移动机库设备！！！");
+        Device hangarDevice = deviceList.get(0);
+        if (StringUtils.isNull(hangarDevice.getMatchId()) || 0 == hangarDevice.getMatchId())
+            throw new ServiceException("请先为移动机库绑定无人机设备！！！");
+        Device droneDevice = deviceMapper.selectById(hangarDevice.getMatchId());
+        String[] s1 = {hangarDevice.getLiveVideoUrlOne(), hangarDevice.getLiveVideoUrlTwo(), hangarDevice.getLiveVideoUrlThree()};
+        String[] s2 = {droneDevice.getLiveVideoUrlFour()};
+        return DeviceVideoVO.builder().hangarVideoList(Arrays.asList(s1)).droneVideoList(Arrays.asList(s2)).build();
     }
 }

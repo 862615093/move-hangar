@@ -12,6 +12,7 @@ import snegrid.move.hangar.base.page.TableDataInfo;
 import snegrid.move.hangar.business.domain.dto.DeviceMatchDTO;
 import snegrid.move.hangar.business.domain.dto.DevicePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Device;
+import snegrid.move.hangar.business.domain.vo.DeviceVideoVO;
 import snegrid.move.hangar.business.service.IDeviceService;
 import snegrid.move.hangar.constant.Type;
 
@@ -72,5 +73,11 @@ public class DeviceController extends BaseController {
     @PostMapping("/match")
     public AjaxResult match(@Validated @RequestBody DeviceMatchDTO dto) {
         return toAjax(deviceService.match(dto));
+    }
+
+    @ApiOperation("获取当前绑定设备视频地址")
+    @GetMapping("/bind/video")
+    public DeviceVideoVO bindVideo() {
+        return deviceService.bindVideo();
     }
 }

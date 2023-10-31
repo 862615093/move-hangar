@@ -42,14 +42,16 @@ public class TelemetryStrategyServiceImpl implements IMqttStrategyService {
             l1CacheService.cacheUpdate(dto.getTopicPrefix() + dto.getTopicSuffix(), vo);
             l1CacheService.cacheUpdate("HangarNumber", dto.getTopicSuffix());
             msg = JSONObject.toJSONString(vo);
+            //3.推送遥测到所有在线用户
+            nettyHandler.sendMessageToAll("2", msg);
         } else {
             DroneTelemetryVo droneTelemetryVo = JSON.parseObject(dto.getMessage(), DroneTelemetryVo.class);
             l1CacheService.cacheUpdate(dto.getTopicPrefix() + dto.getTopicSuffix(), droneTelemetryVo);
             l1CacheService.cacheUpdate("DroneNumber", dto.getTopicSuffix());
             msg = JSONObject.toJSONString(droneTelemetryVo);
+            //3.推送遥测到所有在线用户
+            nettyHandler.sendMessageToAll("1", msg);
         }
-        //3.推送遥测到所有在线用户
-        nettyHandler.sendMessageToAll(msg);
     }
 
     @Override

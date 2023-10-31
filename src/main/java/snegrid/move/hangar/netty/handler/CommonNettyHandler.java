@@ -9,6 +9,7 @@ import snegrid.move.hangar.business.service.IFlyTaskService;
 import snegrid.move.hangar.netty.message.CommonMessage;
 import snegrid.move.hangar.netty.message.Message;
 import snegrid.move.hangar.netty.message.MessageType;
+import snegrid.move.hangar.netty.message.MessageUtil;
 import snegrid.move.hangar.netty.model.User;
 import snegrid.move.hangar.utils.common.StringUtils;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static snegrid.move.hangar.constant.MagicValue.MSG;
+import static snegrid.move.hangar.constant.MagicValue.MSG_TYPE;
 
 /**
  * handler 处理器
@@ -42,12 +44,34 @@ public class CommonNettyHandler implements NettyHandler {
         return commonMessage;
     }
 
-    @Handle(MessageType.START_TASK)
-    public Message droneControl(String channelId, String routeId) {
-        logger.info("6.droneControl()... channelId={}, routeId={}", channelId, routeId);
+    @Handle(MessageType.STAR_FLY_TASK)
+    public Message startFlyTask(String channelId, String routeId) {
+        logger.info("6.startFlyTask()... channelId={}, routeId={}", channelId, routeId);
         Map<String, User> userMap = nettyUserManager.getUserMap();
         User user = userMap.get(channelId);
-        Message message = flyTaskService.startTask(user, routeId);
+        Message message = null;
+        try {
+            message = flyTaskService.startFlyTask(user, routeId);
+        } catch (Exception e) {
+            logger.error("开始任务指令下发异常", e);
+            message = MessageUtil.getMessage(user, false, "指令下发失败！");
+        }
+        logger.info("6.1.message={}", message);
+        return message;
+    }
+
+    @Handle(MessageType.END_FLY_TASK)
+    public Message endFlyTask(String channelId) {
+        logger.info("6.endFlyTask()... channelId={}", channelId);
+        Map<String, User> userMap = nettyUserManager.getUserMap();
+        User user = userMap.get(channelId);
+        Message message = null;
+        try {
+            message = flyTaskService.endFlyTask(user);
+        } catch (Exception e) {
+            logger.error("开始任务指令下发异常", e);
+            message = MessageUtil.getMessage(user, false, "指令下发失败！");
+        }
         logger.info("6.1.message={}", message);
         return message;
     }
@@ -57,7 +81,13 @@ public class CommonNettyHandler implements NettyHandler {
         logger.info("6.droneControl()... channelId={}, msgType={}", channelId, msgType);
         Map<String, User> userMap = nettyUserManager.getUserMap();
         User user = userMap.get(channelId);
-        Message message = flyTaskService.droneControl(user, msgType);
+        Message message = null;
+        try {
+            message = flyTaskService.droneControl(user, msgType);
+        } catch (Exception e) {
+            logger.error("无人机控制指令下发异常", e);
+            message = MessageUtil.getMessage(user, false, "指令下发失败！");
+        }
         logger.info("6.1.message={}", message);
         return message;
     }
@@ -67,7 +97,13 @@ public class CommonNettyHandler implements NettyHandler {
         logger.info("6.hangarControl()... channelId={}, msgType={}", channelId, msgType);
         Map<String, User> userMap = nettyUserManager.getUserMap();
         User user = userMap.get(channelId);
-        Message message = flyTaskService.hangarControl(user, msgType);
+        Message message = null;
+        try {
+            message = flyTaskService.hangarControl(user, msgType);
+        } catch (Exception e) {
+            logger.error("机库控制指令下发异常", e);
+            message = MessageUtil.getMessage(user, false, "指令下发失败！");
+        }
         logger.info("6.1.message={}", message);
         return message;
     }
@@ -93,7 +129,21 @@ public class CommonNettyHandler implements NettyHandler {
             return;
         }
         allUser.stream().parallel().forEach(user -> {
-            CommonMessage message = new CommonMessage(MessageType.SUCCESS, user).put(MSG, msg);
+            CommonMessage message = new CommonMessage(MessageType.SUCCESS, user)
+                    .put(MSG, msg);
+            user.handleRequest(message);
+        });
+    }
+
+    public void sendMessageToAll(String msgType, String msg) {
+        List<User> allUser = nettyUserManager.getAllUser();
+        if (StringUtils.isEmpty(msg) || CollUtil.isEmpty(allUser)) {
+            return;
+        }
+        allUser.stream().parallel().forEach(user -> {
+            CommonMessage message = new CommonMessage(MessageType.SUCCESS, user)
+                    .put(MSG_TYPE, msgType)
+                    .put(MSG, msg);
             user.handleRequest(message);
         });
     }

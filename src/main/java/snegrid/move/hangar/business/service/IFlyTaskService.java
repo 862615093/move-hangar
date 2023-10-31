@@ -31,7 +31,15 @@ public interface IFlyTaskService extends IService<FlyTask> {
      * @param routeId 航线ID
      * @return Message
      */
-    Message startTask(User user, String routeId);
+    Message startFlyTask(User user, String routeId);
+
+    /**
+     * 结束飞行任务
+     *
+     * @param user 当前连接用户
+     * @return Message
+     */
+    Message endFlyTask(User user);
 
     /**
      * 获取当前飞行任务
@@ -39,6 +47,13 @@ public interface IFlyTaskService extends IService<FlyTask> {
      * @return
      */
     FlyTask getLastFlyTask();
+
+    /**
+     * 获取当前未结束的飞行任务
+     *
+     * @return
+     */
+    FlyTask getLastUnfinishedFlyTask();
 
     /**
      * 无人机控制指令直接发送mqtt

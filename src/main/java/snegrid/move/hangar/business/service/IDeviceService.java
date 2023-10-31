@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import snegrid.move.hangar.business.domain.dto.DeviceMatchDTO;
 import snegrid.move.hangar.business.domain.dto.DevicePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Device;
+import snegrid.move.hangar.business.domain.vo.DeviceVideoVO;
 import snegrid.move.hangar.business.domain.vo.HangerDevice;
 
 import java.util.List;
@@ -31,4 +32,6 @@ public interface IDeviceService extends IService<Device> {
     int match(DeviceMatchDTO dto);
 
     List<HangerDevice> getDeviceListForPublic(HangerDevice dto);
+
+    DeviceVideoVO bindVideo();
 }

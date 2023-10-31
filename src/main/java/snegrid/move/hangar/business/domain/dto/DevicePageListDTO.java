@@ -19,5 +19,5 @@ public class DevicePageListDTO extends BaseEntity {
     private String deviceName;
 
     @ApiModelProperty("设备类型")
-    private int type;
+    private Integer type;
 }

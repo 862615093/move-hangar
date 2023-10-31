@@ -50,6 +50,10 @@ public class Route extends CommonEntity implements Serializable {
     private String fileUrl;
 
     @TableField(exist = false)
-    @ApiModelProperty("航线航点信息")
+    @ApiModelProperty("普通航线航点信息")
     private List<RoutePoint> routePointList;
+
+    @TableField(exist = false)
+    @ApiModelProperty("建图航拍航点信息")
+    private List<Object> hangerRouteAerialPhotography;
 }

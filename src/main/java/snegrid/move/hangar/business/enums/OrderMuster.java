@@ -1,7 +1,9 @@
 package snegrid.move.hangar.business.enums;
 
+import cn.hutool.core.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import snegrid.move.hangar.exception.ServiceException;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -18,9 +20,7 @@ public enum OrderMuster {
 
 
     //================机场=================
-    /**
-     * ：做好飞机起飞前的工作
-     */
+
     DRONE_BOX_PREPARE(2000, "机场准备", 0, 0, "机场流程"),
 
     DRONE_BOX_STOP(2002, "机场急停", 0, 0, "机场流程"),
@@ -34,20 +34,22 @@ public enum OrderMuster {
      * 初始化机场
      */
     DRONE_BOX_CANCEL_TASK(2003, "取消飞行", 0, 0, "机场流程"),
+
     /**
      * 飞往紧急降落点后机场复位
      */
     DRONE_BOX_EMERGENCY_BACK(2008, "急停回收", 0, 0, "机场流程"),
+
     /**
      * 一键飞行
      */
-    DRONE_BOX_ONE_CLICK_FLIGHT(4000, "一键飞行", 0, 1, "飞行任务流程"),
+//    DRONE_BOX_ONE_CLICK_FLIGHT(4000, "一键飞行", 0, 1, "飞行任务流程"),
 
-    DRONE_BOX_ONE_CLICK_FLIGHT_2(4002, "一键飞行", 0, 1, "飞行任务流程"),
+//    DRONE_BOX_ONE_CLICK_FLIGHT_2(4002, "一键飞行", 0, 1, "飞行任务流程"),
 
-    DRONE_BOX_START_RTK(2023, "开启RTK基站", 0, 0, "机场流程"),
+//    DRONE_BOX_START_RTK(2023, "开启RTK基站", 0, 0, "机场流程"),
 
-    DRONE_BOX_STOP_RTK(2026, "关闭RTK基站", 0, 0, "机场流程"),
+//    DRONE_BOX_STOP_RTK(2026, "关闭RTK基站", 0, 0, "机场流程"),
 
     //===========无人机====================
     /**
@@ -92,8 +94,6 @@ public enum OrderMuster {
     DRONE_SWITCH_INFRARED(3302, "切换红外", 0, 1, "飞机控制"),
     DRONE_SHUT_PICTURE_IN_PICTURE(3303, "关闭画中画", 0, 1, "飞机控制"),
     DRONE_SWITCH_PICTURE_IN_PICTURE(3304, "切换画中画", 0, 1, "飞机控制"),
-    /* DRONE_TX2_OPEN(3330,"开tx2电源",0,1,"机场流程"),
-     DRONE_TX2_SHUT(3332,"关tx2电源",0,1,"机场流程"),*/
     DRONE_CLEAR_SDCARD(3900, "清空SD卡", 0, 1, "文件管理"),
     DRONE_FLIE_TRANSMISSION_START(3906, "清理飞行数据", 0, 1, "文件管理"),
     DRONE_FLIE_TRANSMISSION_END(3908, "停止文件传输", 0, 1, "文件管理"),
@@ -101,22 +101,22 @@ public enum OrderMuster {
     /**
      * 演示飞行 起飞
      */
-    DEMO_FLY_START_TASK(9999, "演示飞行", 0, 1, "飞行控制"),
+//    DEMO_FLY_START_TASK(9999, "演示飞行", 0, 1, "飞行控制"),
 
     /**
      * 暂停任务
      */
-    DRONE_SUSPEND_TASK(4016, "暂停任务", 0, 1, "飞行控制"),
+//    DRONE_SUSPEND_TASK(4016, "暂停任务", 0, 1, "飞行控制"),
 
     /**
      * 开始任务
      */
-    DRONE_START_TASK(4018, "恢复任务", 0, 1, "飞行控制"),
+//    DRONE_START_TASK(4018, "恢复任务", 0, 1, "飞行控制"),
 
     /**
      * 结束任务
      */
-    DRONE_STOP_TASK(4022, "结束任务", 0, 1, "飞行控制"),
+//    DRONE_STOP_TASK(4022, "结束任务", 0, 1, "飞行控制"),
 
     /**
      * 命令飞机返回
@@ -152,7 +152,9 @@ public enum OrderMuster {
     }
 
     public static OrderMuster getByMsgType(int value) {
-        return ORDER_MAP.get(value);
+        OrderMuster orderMuster = ORDER_MAP.get(value);
+        if (ObjectUtil.isNull(orderMuster)) throw new ServiceException("OrderMuster的value=" + value + "值不存在!");
+        return orderMuster;
     }
 
     /**

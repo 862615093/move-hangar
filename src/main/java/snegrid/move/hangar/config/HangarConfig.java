@@ -28,19 +28,9 @@ public class HangarConfig {
     private String copyrightYear;
 
     /**
-     * 实例演示开关
-     */
-    private boolean demoEnabled;
-
-    /**
      * 上传路径
      */
     private static String profile;
-
-    /**
-     * 获取地址开关
-     */
-    private static boolean addressEnabled;
 
     /**
      * 验证码类型
@@ -72,28 +62,12 @@ public class HangarConfig {
         this.copyrightYear = copyrightYear;
     }
 
-    public boolean isDemoEnabled() {
-        return demoEnabled;
-    }
-
-    public void setDemoEnabled(boolean demoEnabled) {
-        this.demoEnabled = demoEnabled;
-    }
-
     public static String getProfile() {
         return profile;
     }
 
     public void setProfile(String profile) {
         HangarConfig.profile = profile;
-    }
-
-    public static boolean isAddressEnabled() {
-        return addressEnabled;
-    }
-
-    public void setAddressEnabled(boolean addressEnabled) {
-        HangarConfig.addressEnabled = addressEnabled;
     }
 
     public static String getCaptchaType() {

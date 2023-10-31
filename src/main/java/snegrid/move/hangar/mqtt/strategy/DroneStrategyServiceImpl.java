@@ -11,6 +11,7 @@ import snegrid.move.hangar.business.domain.entity.FlyTask;
 import snegrid.move.hangar.business.service.IFileService;
 import snegrid.move.hangar.business.service.IFlyTaskService;
 import snegrid.move.hangar.business.service.L1CacheService;
+import snegrid.move.hangar.config.RedisCache;
 import snegrid.move.hangar.exception.ServiceException;
 import snegrid.move.hangar.mqtt.factory.Parameter;
 import snegrid.move.hangar.mqtt.message.CommonReceiveCmd;
@@ -22,6 +23,7 @@ import snegrid.move.hangar.utils.fly.FlyTaskUtil;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static snegrid.move.hangar.business.constant.AttachmentConstant.ROUTE_TYPE;
 import static snegrid.move.hangar.constant.MagicValue.DECIMAL_POINT;
@@ -43,6 +45,8 @@ public class DroneStrategyServiceImpl implements IMqttStrategyService {
     private final IFileService fileService;
 
     private final L1CacheService l1CacheService;
+
+    private final RedisCache redisCache;
 
     private final CommonNettyHandler nettyHandler;
 
@@ -70,11 +74,9 @@ public class DroneStrategyServiceImpl implements IMqttStrategyService {
                         .historyBizId(lastFlyTask.getId()).category(0).elpLongitude(0d).elpLatitude(0d).minBattery(40)
                         .kmzFiles(Collections.singletonList(routeFile.getFilePath())).build()))
                     throw new ServiceException("发送飞行航线任务指令失败！");
-                //2.更新飞行开始时间
-                flyTaskService.lambdaUpdate().eq(FlyTask::getId, lastFlyTask.getId()).set(FlyTask::getFlyStartTime, LocalDateTime.now()).update();
-                //3.流程通知
+                //2.流程通知
                 nettyHandler.sendMessageToAll("发送飞行航线任务指令成功！");
-                //TODO 4.消息收集到es
+                //TODO 3.消息收集到es
                 break;
             case 6007:
                 logger.info("6007：MCS航线解析成功通知");
@@ -82,7 +84,12 @@ public class DroneStrategyServiceImpl implements IMqttStrategyService {
                     throw new ServiceException("发送开始飞行任务指令失败！");
                 //2.流程通知
                 nettyHandler.sendMessageToAll("发送开始飞行任务指令成功！");
-                //TODO 3.消息收集到es
+                //3.更新飞行开始时间
+                lastFlyTask = flyTaskService.getLastFlyTask();
+                flyTaskService.lambdaUpdate().eq(FlyTask::getId, lastFlyTask.getId()).set(FlyTask::getFlyStartTime, LocalDateTime.now()).update();
+                //4.标识无人机起飞，无法中断飞行任务
+                redisCache.setCacheObject("fly_task:interrupt_task:" + lastFlyTask.getId(), 1, 3, TimeUnit.HOURS);
+                //TODO 4.消息收集到es
                 break;
             case 6002:
                 logger.info("6002：无人机起飞成功通知");

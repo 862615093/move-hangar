@@ -13,7 +13,10 @@ public final class MessageType {
 	public static final int LONGIN = 100;
 
 	//开始任务
-	public static final int START_TASK = 2000;
+	public static final int STAR_FLY_TASK = 2000;
+
+	//结束任务
+	public static final int END_FLY_TASK = 4000;
 
 	//无人机控制指令
 	public static final int DRONE_CONTROL = 1;

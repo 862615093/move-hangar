@@ -151,6 +151,8 @@ public class MagicValue {
      */
     public static final String MSG = "msg";
 
+    public static final String MSG_TYPE = "msgType";
+
     /**
      * 消息结果
      */
