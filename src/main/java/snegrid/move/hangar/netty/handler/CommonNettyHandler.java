@@ -42,6 +42,16 @@ public class CommonNettyHandler implements NettyHandler {
         return commonMessage;
     }
 
+    @Handle(MessageType.START_TASK)
+    public Message droneControl(String channelId, String routeId) {
+        logger.info("6.droneControl()... channelId={}, routeId={}", channelId, routeId);
+        Map<String, User> userMap = nettyUserManager.getUserMap();
+        User user = userMap.get(channelId);
+        Message message = flyTaskService.startTask(user, routeId);
+        logger.info("6.1.message={}", message);
+        return message;
+    }
+
     @Handle(MessageType.DRONE_CONTROL)
     public Message droneControl(String channelId, Integer msgType) {
         logger.info("6.droneControl()... channelId={}, msgType={}", channelId, msgType);

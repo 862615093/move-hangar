@@ -15,6 +15,9 @@ import snegrid.move.hangar.base.BaseEntity;
 @ApiModel(value = "DevicePageListDTO对象", description = "设备查询列表入参")
 public class DevicePageListDTO extends BaseEntity {
 
-    @ApiModelProperty("缺陷名称")
+    @ApiModelProperty("设备名称")
     private String deviceName;
+
+    @ApiModelProperty("设备类型")
+    private int type;
 }

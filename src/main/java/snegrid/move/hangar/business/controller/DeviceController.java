@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import snegrid.move.hangar.base.AjaxResult;
 import snegrid.move.hangar.base.BaseController;
 import snegrid.move.hangar.base.page.TableDataInfo;
+import snegrid.move.hangar.business.domain.dto.DeviceMatchDTO;
 import snegrid.move.hangar.business.domain.dto.DevicePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Device;
 import snegrid.move.hangar.business.service.IDeviceService;
@@ -68,8 +69,8 @@ public class DeviceController extends BaseController {
     }
 
     @ApiOperation("匹配无人机")
-    @PostMapping("/match/{id}/{droneId}")
-    public AjaxResult match(@PathVariable("id") Long id, @PathVariable("droneId") Long droneId) {
-        return toAjax(deviceService.match(id, droneId));
+    @PostMapping("/match")
+    public AjaxResult match(@Validated @RequestBody DeviceMatchDTO dto) {
+        return toAjax(deviceService.match(dto));
     }
 }

@@ -95,6 +95,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public int updateDictData(SysDictData data) {
         int row = dictDataMapper.updateDictData(data);
+        //TODO 缓存没同步
         if (row > 0) {
             List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
             DictUtils.setDictCache(data.getDictType(), dictDatas);

@@ -11,7 +11,7 @@ import java.util.HashMap;
  */
 public class MybatisPlusAutoGenerator {
     public static void main(String[] args) {
-        String basePath = "D:\\work-space\\company-project\\move-hangar\\src\\main\\java\\";
+        String basePath = "/usr/local/java/work-space/company-project/move-hangar/src/main/java/";
         FastAutoGenerator.create(
                 "jdbc:mysql://47.99.163.33:3306/move_hangar?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull",
                 "root",
@@ -30,12 +30,12 @@ public class MybatisPlusAutoGenerator {
                                 put(OutputFile.service, basePath + "snegrid/move/hangar/business/service");
                                 put(OutputFile.serviceImpl, basePath + "snegrid/move/hangar/business/service/impl");
                                 put(OutputFile.mapper, basePath + "snegrid/move/hangar/business/mapper");
-                                put(OutputFile.xml, "D:\\work-space\\company-project\\move-hangar\\src\\main\\" + "resources/mapper/business");
+                                put(OutputFile.xml, "/usr/local/java/work-space/company-project/move-hangar/src/main/" + "resources/mapper/business");
                             }}); // 设置mapperXml生成路径
                 })
                 .strategyConfig(builder -> {
                     builder
-                            .addInclude("t_device", "t_file", "t_route", "t_fly_task") // 设置需要生成的表名
+                            .addInclude("t_route_point") // 设置需要生成的表名
                             .addTablePrefix("t_")
                             .entityBuilder().enableLombok();
                 })

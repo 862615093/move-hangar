@@ -1,6 +1,7 @@
 package snegrid.move.hangar.business.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import snegrid.move.hangar.business.domain.dto.DeviceMatchDTO;
 import snegrid.move.hangar.business.domain.dto.DevicePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Device;
 import snegrid.move.hangar.business.domain.vo.HangerDevice;
@@ -27,7 +28,7 @@ public interface IDeviceService extends IService<Device> {
 
     int delete(Long id);
 
-    int match(Long id, Long droneId);
+    int match(DeviceMatchDTO dto);
 
     List<HangerDevice> getDeviceListForPublic(HangerDevice dto);
 }

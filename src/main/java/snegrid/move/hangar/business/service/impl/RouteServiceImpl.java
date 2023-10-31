@@ -1,6 +1,7 @@
 package snegrid.move.hangar.business.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
@@ -13,11 +14,15 @@ import org.springframework.web.multipart.MultipartFile;
 import snegrid.move.hangar.base.AjaxResult;
 import snegrid.move.hangar.business.domain.dto.RouteListDTO;
 import snegrid.move.hangar.business.domain.dto.RoutePageListDTO;
+import snegrid.move.hangar.business.domain.entity.Device;
 import snegrid.move.hangar.business.domain.entity.File;
 import snegrid.move.hangar.business.domain.entity.Route;
+import snegrid.move.hangar.business.domain.entity.RoutePoint;
 import snegrid.move.hangar.business.domain.vo.RouteVO;
 import snegrid.move.hangar.business.mapper.RouteMapper;
+import snegrid.move.hangar.business.service.IDeviceService;
 import snegrid.move.hangar.business.service.IFileService;
+import snegrid.move.hangar.business.service.IRoutePointService;
 import snegrid.move.hangar.business.service.IRouteService;
 import snegrid.move.hangar.exception.ServiceException;
 import snegrid.move.hangar.minio.config.MinioConfig;
@@ -25,6 +30,7 @@ import snegrid.move.hangar.minio.utils.MinIoUtils;
 import snegrid.move.hangar.security.util.SecurityUtils;
 import snegrid.move.hangar.utils.common.DateUtils;
 import snegrid.move.hangar.utils.common.StringUtils;
+import snegrid.move.hangar.utils.fly.KmzUtil;
 import snegrid.move.hangar.utils.fly.MappingUtil;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +59,8 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final IDeviceService deviceService;
+
     private final RouteMapper routeMapper;
 
     private final MinIoUtils minIoUtil;
@@ -61,17 +69,32 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
 
     private final MinioConfig minioConfig;
 
+    private final IRoutePointService routePointService;
+
     @Override
     public List<Route> pageList(RoutePageListDTO dto) {
-        return routeMapper.selectList(new LambdaQueryWrapper<Route>()
+        List<Route> routeList = routeMapper.selectList(new LambdaQueryWrapper<Route>()
                 .like(StringUtils.isNotNull(dto.getRouteName()), Route::getRouteName, dto.getRouteName())
                 .eq(Route::getValid, true)
                 .orderByDesc(Route::getCreateTime));
+        routeList.forEach(route -> {
+            File file = fileService.getAttachmentFileList(route.getId(), ROUTE_TYPE).get(0);
+            if (ObjUtil.isNotNull(file)) {
+                route.setFileUrl(file.getFileUrl());
+            }
+            route.setRoutePointList(routePointService.list(new LambdaQueryWrapper<RoutePoint>().eq(RoutePoint::getRouteId, route.getId())));
+        });
+        return routeList;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult importKmz(MultipartFile kmz, Long hangarId) {
+        if (StringUtils.isNull(hangarId)) {
+            List<Device> deviceList = deviceService.list(new LambdaQueryWrapper<Device>().eq(Device::getType, 2));
+            if (deviceList.isEmpty()) throw new ServiceException("请先进入设备管理页面，录入一台机库设备！！！");
+            hangarId = deviceList.get(0).getId();
+        }
         //1.TODO 校验航线
 
         //2.上传航线 & 保存记录
@@ -82,19 +105,21 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
             logger.error("kmz上传minio异常！", e);
             return AjaxResult.error(e.getMessage());
         }
-        Route route = Route.builder().routeName(kmz.getOriginalFilename()).hangarId(hangarId).build();
+        String fileName = kmz.getOriginalFilename().substring(0, kmz.getOriginalFilename().lastIndexOf(DECIMAL_POINT));
+        Route route = Route.builder().routeName(fileName).hangarId(hangarId).build();
         if (routeMapper.insert(route) > 0
                 && fileService.save(File.builder()
                 .relId(route.getId())
                 .relType(ROUTE_TYPE)
-                .fileName(kmz.getOriginalFilename().substring(0, kmz.getOriginalFilename().lastIndexOf(DECIMAL_POINT)))
+                .fileName(fileName)
                 .filePath(BUCKET_NAME + filePath)
-                .fileUrl(minioConfig.getUrl() + LEFT_SLASH + filePath)
+                .fileUrl(minioConfig.getUrl() + filePath)
                 .relId(route.getId())
                 .fileType(kmz.getOriginalFilename().substring(kmz.getOriginalFilename().lastIndexOf(DECIMAL_POINT) + 1))
                 .uploadTime(LocalDateTime.now())
                 .uploadUserId(SecurityUtils.getUserId())
-                .build())) {
+                .build())
+                && saveRoutePoint(kmz, route.getId())) {
             return AjaxResult.success(route.getId());
         } else {
             return AjaxResult.error("航线记录保存失败！");
@@ -139,5 +164,17 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
         List<RouteVO> routeVOList = MappingUtil.copyListProperties(routeList, RouteVO::new);
         routeVOList.forEach(routeVO -> routeVO.setRouteFileUrl(fileService.getAttachmentFileList(routeVO.getId(), ROUTE_TYPE).get(0).getFileUrl()));
         return routeVOList;
+    }
+
+    private boolean saveRoutePoint(MultipartFile kmz, Long routeId) {
+        try {
+            List<KmzUtil.KmzRoutePoint> list = KmzUtil.parseKmzRoutePoint(kmz.getInputStream());
+            List<RoutePoint> routePointList = MappingUtil.copyListProperties(list, RoutePoint::new);
+            routePointList.forEach(routePoint -> routePoint.setRouteId(routeId));
+            return routePointService.saveBatch(routePointList);
+        } catch (Exception e) {
+            logger.error("kmz航点解析异常！", e);
+            return false;
+        }
     }
 }

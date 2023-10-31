@@ -1,18 +1,17 @@
 package snegrid.move.hangar.business.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import snegrid.move.hangar.constant.Type;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -26,6 +25,8 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @TableName("t_route")
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel(value = "Route对象", description = "航线表")
 public class Route extends CommonEntity implements Serializable {
 
@@ -41,4 +42,14 @@ public class Route extends CommonEntity implements Serializable {
 
     @ApiModelProperty("航线名称")
     private String routeName;
+
+    /**********************************************************关联属性************************************************/
+
+    @TableField(exist = false)
+    @ApiModelProperty("航线URL")
+    private String fileUrl;
+
+    @TableField(exist = false)
+    @ApiModelProperty("航线航点信息")
+    private List<RoutePoint> routePointList;
 }

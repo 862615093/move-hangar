@@ -37,17 +37,25 @@ public class Device extends CommonEntity implements Serializable {
     @ApiModelProperty("设备配对ID")
     private Long matchId;
 
+    @ApiModelProperty("无人机是否匹配: 0-未匹配,1-已匹配")
+    private Integer matchStatus;
+
     @ApiModelProperty("设备名称")
     private String deviceName;
 
     @ApiModelProperty("设备类型: 0-固定机场,1-无人机,2-移动机场")
+    @NotNull(message = "设备类型不能为空")
     private Integer type;
 
     @ApiModelProperty("设备号")
     private String deviceNumber;
 
     @ApiModelProperty("设备型号")
-    private String deviceModel;
+    private Long deviceModel;
+
+    @TableField(exist = false)
+    @ApiModelProperty("设备型号名称")
+    private String deviceModelName;
 
     @ApiModelProperty("设备管理员ID")
     private Long deviceManagerId;
