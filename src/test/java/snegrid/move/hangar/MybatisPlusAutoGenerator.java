@@ -35,7 +35,7 @@ public class MybatisPlusAutoGenerator {
                 })
                 .strategyConfig(builder -> {
                     builder
-                            .addInclude("t_route_point") // 设置需要生成的表名
+                            .addInclude("t_route_user_rel") // 设置需要生成的表名
                             .addTablePrefix("t_")
                             .entityBuilder().enableLombok();
                 })

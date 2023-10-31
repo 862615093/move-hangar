@@ -12,6 +12,7 @@ import snegrid.move.hangar.base.BaseController;
 import snegrid.move.hangar.base.page.TableDataInfo;
 import snegrid.move.hangar.business.domain.dto.RoutePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Route;
+import snegrid.move.hangar.business.domain.entity.RouteUserRel;
 import snegrid.move.hangar.business.service.IRouteService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -64,5 +65,17 @@ public class RouteController extends BaseController {
     @DeleteMapping("/delete/{id}")
     public AjaxResult delete(@PathVariable("id") Long id) {
         return toAjax(routeService.delete(id));
+    }
+
+    @ApiOperation("获取用户最近一次选择的航线")
+    @GetMapping( "/getLastSelectRoute/{userId}")
+    public AjaxResult getLastSelectRoute(@PathVariable("userId") Long userId) {
+        return AjaxResult.success(routeService.getLastSelectRoute(userId));
+    }
+
+    @ApiOperation("设置用户最近一次选择的航线")
+    @PostMapping("/setLastSelectRoute")
+    public AjaxResult setLastSelectRoute(@RequestBody @Validated RouteUserRel routeUserRel) {
+        return toAjax(routeService.setLastSelectRoute(routeUserRel));
     }
 }

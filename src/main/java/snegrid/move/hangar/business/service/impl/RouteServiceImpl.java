@@ -14,16 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import snegrid.move.hangar.base.AjaxResult;
 import snegrid.move.hangar.business.domain.dto.RouteListDTO;
 import snegrid.move.hangar.business.domain.dto.RoutePageListDTO;
-import snegrid.move.hangar.business.domain.entity.Device;
-import snegrid.move.hangar.business.domain.entity.File;
-import snegrid.move.hangar.business.domain.entity.Route;
-import snegrid.move.hangar.business.domain.entity.RoutePoint;
+import snegrid.move.hangar.business.domain.entity.*;
 import snegrid.move.hangar.business.domain.vo.RouteVO;
 import snegrid.move.hangar.business.mapper.RouteMapper;
-import snegrid.move.hangar.business.service.IDeviceService;
-import snegrid.move.hangar.business.service.IFileService;
-import snegrid.move.hangar.business.service.IRoutePointService;
-import snegrid.move.hangar.business.service.IRouteService;
+import snegrid.move.hangar.business.service.*;
 import snegrid.move.hangar.exception.ServiceException;
 import snegrid.move.hangar.minio.config.MinioConfig;
 import snegrid.move.hangar.minio.utils.MinIoUtils;
@@ -70,6 +64,8 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
     private final MinioConfig minioConfig;
 
     private final IRoutePointService routePointService;
+
+    private final IRouteUserRelService routeUserRelService;
 
     @Override
     public List<Route> pageList(RoutePageListDTO dto) {
@@ -150,6 +146,7 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int delete(Long id) {
         return this.lambdaUpdate().eq(Route::getId, id).set(Route::getValid, false).update() ? 1 : 0;
     }
@@ -175,6 +172,23 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
         } catch (Exception e) {
             logger.error("kmz航点解析异常！", e);
             return false;
+        }
+    }
+
+    @Override
+    public RouteUserRel getLastSelectRoute(Long userId) {
+        return routeUserRelService.list(new LambdaQueryWrapper<RouteUserRel>().eq(RouteUserRel::getUserId, userId)).get(0);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int setLastSelectRoute(RouteUserRel routeUserRel) {
+        RouteUserRel lastSelectRoute = this.getLastSelectRoute(routeUserRel.getUserId());
+        if (ObjUtil.isNull(lastSelectRoute)) {
+            return routeUserRelService.save(lastSelectRoute) ? 1 : 0;
+        } else {
+            routeUserRel.setId(lastSelectRoute.getId());
+            return routeUserRelService.updateById(routeUserRel) ? 1 : 0;
         }
     }
 }

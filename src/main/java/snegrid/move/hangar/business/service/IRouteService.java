@@ -7,6 +7,7 @@ import snegrid.move.hangar.business.domain.dto.FlyTaskPicListDTO;
 import snegrid.move.hangar.business.domain.dto.RouteListDTO;
 import snegrid.move.hangar.business.domain.dto.RoutePageListDTO;
 import snegrid.move.hangar.business.domain.entity.Route;
+import snegrid.move.hangar.business.domain.entity.RouteUserRel;
 import snegrid.move.hangar.business.domain.vo.RouteVO;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,4 +35,9 @@ public interface IRouteService extends IService<Route> {
     void downRouteKmz(RoutePageListDTO dto, HttpServletResponse response);
 
     List<RouteVO> routeListForPublic(RouteListDTO dto);
+
+    RouteUserRel getLastSelectRoute(Long userId);
+
+    int setLastSelectRoute(RouteUserRel routeUserRel);
+
 }

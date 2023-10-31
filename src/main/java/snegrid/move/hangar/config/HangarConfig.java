@@ -33,6 +33,11 @@ public class HangarConfig {
     private static String profile;
 
     /**
+     * 获取地址开关
+     */
+    private static boolean addressEnabled;
+
+    /**
      * 验证码类型
      */
     private static String captchaType;
@@ -68,6 +73,14 @@ public class HangarConfig {
 
     public void setProfile(String profile) {
         HangarConfig.profile = profile;
+    }
+
+    public static boolean isAddressEnabled() {
+        return addressEnabled;
+    }
+
+    public void setAddressEnabled(boolean addressEnabled) {
+        HangarConfig.addressEnabled = addressEnabled;
     }
 
     public static String getCaptchaType() {
