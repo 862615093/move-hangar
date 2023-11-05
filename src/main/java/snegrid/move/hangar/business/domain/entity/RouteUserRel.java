@@ -2,6 +2,7 @@ package snegrid.move.hangar.business.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -18,6 +19,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("t_route_user_rel")
 public class RouteUserRel implements Serializable {
 
     private static final long serialVersionUID = 1L;

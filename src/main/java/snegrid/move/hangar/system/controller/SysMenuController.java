@@ -28,7 +28,7 @@ public class SysMenuController extends BaseController {
     /**
      * 获取菜单列表
      */
-    @PreAuthorize("@ss.hasPermi('system:menu:list')")
+//    @PreAuthorize("@ss.hasPermi('system:menu:list')")
     @GetMapping("/list")
     public AjaxResult list(SysMenu menu) {
         List<SysMenu> menus = menuService.selectMenuList(menu, getUserId());
@@ -38,7 +38,7 @@ public class SysMenuController extends BaseController {
     /**
      * 根据菜单编号获取详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:menu:query')")
+//    @PreAuthorize("@ss.hasPermi('system:menu:query')")
     @GetMapping(value = "/{menuId}")
     public AjaxResult getInfo(@PathVariable Long menuId) {
         return AjaxResult.success(menuService.selectMenuById(menuId));
@@ -69,7 +69,7 @@ public class SysMenuController extends BaseController {
      * 新增菜单
      */
 //    @Log(title = "菜单管理", businessType = BusinessType.INSERT)
-    @PreAuthorize("@ss.hasPermi('system:menu:add')")
+//    @PreAuthorize("@ss.hasPermi('system:menu:add')")
     @PostMapping
     public AjaxResult add(@Validated @RequestBody SysMenu menu) {
         if (UserConstants.NOT_UNIQUE.equals(menuService.checkMenuNameUnique(menu))) {
@@ -85,7 +85,7 @@ public class SysMenuController extends BaseController {
      * 修改菜单
      */
 //    @Log(title = "菜单管理", businessType = BusinessType.UPDATE)
-    @PreAuthorize("@ss.hasPermi('system:menu:edit')")
+//    @PreAuthorize("@ss.hasPermi('system:menu:edit')")
     @PutMapping
     public AjaxResult edit(@Validated @RequestBody SysMenu menu) {
         if (UserConstants.NOT_UNIQUE.equals(menuService.checkMenuNameUnique(menu))) {
@@ -103,7 +103,7 @@ public class SysMenuController extends BaseController {
      * 删除菜单
      */
 //    @Log(title = "菜单管理", businessType = BusinessType.DELETE)
-    @PreAuthorize("@ss.hasPermi('system:menu:remove')")
+//    @PreAuthorize("@ss.hasPermi('system:menu:remove')")
     @DeleteMapping("/{menuId}")
     public AjaxResult remove(@PathVariable("menuId") Long menuId) {
         if (menuService.hasChildByMenuId(menuId)) {

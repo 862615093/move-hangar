@@ -3,8 +3,8 @@ spring:
     name: move-hangar
   servlet:
     multipart:
-      max-file-size: 20MB # 单个文件大小
-      max-request-size: 20MB # 单次请求文件总大小
+      max-file-size: 200MB # 单个文件大小
+      max-request-size: 200MB # 单次请求文件总大小
   #redis
   redis:
     host: 47.99.163.33
@@ -17,8 +17,7 @@ spring:
         max-idle: 8   #最大空闲连接
         min-idle: 0   #最小空闲连接
         max-wait: 100ms #连接等待时间
-
-#mysql
+  #mysql
   datasource:
     url: jdbc:mysql://47.99.163.33:3306/move_hangar?useSSL=false
     username: root
@@ -62,9 +61,6 @@ minio:
   bucketName: dock-bucket
 
 
-logging:
-  level:
-    snegrid.move.hangar: debug
-  pattern:
-    dateformat: HH:mm:ss:SSS
+
+
 

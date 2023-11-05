@@ -121,7 +121,7 @@ public enum OrderMuster {
     /**
      * 命令飞机返回
      */
-    DRONE_AUTO_RETURN(4004, "自动返航", 0, 1, "飞行控制"),
+    DRONE_AUTO_RETURN(4004, "自动返航", 0, 1, "飞机控制"),
 
 
     DRONE_TURN_ON__THE_BOOM_LIGHTS(3334, "开启机臂灯", 0, 1, "飞机控制"),

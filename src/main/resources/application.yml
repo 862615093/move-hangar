@@ -7,6 +7,9 @@ spring:
     active: dev
 netty:
   port: 1314
+logging:
+  level:
+    snegrid.move.hangar: info
 
 # 项目相关配置
 drone:

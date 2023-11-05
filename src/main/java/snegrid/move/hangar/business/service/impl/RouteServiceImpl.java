@@ -177,7 +177,9 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
 
     @Override
     public RouteUserRel getLastSelectRoute(Long userId) {
-        return routeUserRelService.list(new LambdaQueryWrapper<RouteUserRel>().eq(RouteUserRel::getUserId, userId)).get(0);
+        List<RouteUserRel> list = routeUserRelService.list(new LambdaQueryWrapper<RouteUserRel>().eq(RouteUserRel::getUserId, userId));
+        if (CollectionUtil.isEmpty(list)) return null;
+        return list.get(0);
     }
 
     @Override
@@ -185,10 +187,10 @@ public class RouteServiceImpl extends ServiceImpl<RouteMapper, Route> implements
     public int setLastSelectRoute(RouteUserRel routeUserRel) {
         RouteUserRel lastSelectRoute = this.getLastSelectRoute(routeUserRel.getUserId());
         if (ObjUtil.isNull(lastSelectRoute)) {
-            return routeUserRelService.save(lastSelectRoute) ? 1 : 0;
+            return routeUserRelService.save(routeUserRel) ? 1 : 0;
         } else {
-            routeUserRel.setId(lastSelectRoute.getId());
-            return routeUserRelService.updateById(routeUserRel) ? 1 : 0;
+            lastSelectRoute.setId(lastSelectRoute.getId());
+            return routeUserRelService.updateById(lastSelectRoute) ? 1 : 0;
         }
     }
 }

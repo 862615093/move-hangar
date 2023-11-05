@@ -40,7 +40,7 @@ public class CommonNettyHandler implements NettyHandler {
         User user = new User(channelId, userName, userId);
         nettyUserManager.addUser(user);
         CommonMessage commonMessage = new CommonMessage(MessageType.SUCCESS, user);
-        commonMessage.put("msg", "登录成功!");
+        commonMessage.put("msg", "ws通讯建立成功!");
         return commonMessage;
     }
 

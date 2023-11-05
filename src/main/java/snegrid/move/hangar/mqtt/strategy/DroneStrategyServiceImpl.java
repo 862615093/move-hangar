@@ -66,30 +66,40 @@ public class DroneStrategyServiceImpl implements IMqttStrategyService {
         switch (mcsParam.getCode()) {
             case 6001:
                 logger.info("6001：发送飞行航线到MCS");
-                //1.发送飞行航线
+                //1.校验是否属于中断任务
                 lastFlyTask = flyTaskService.getLastFlyTask();
-                File routeFile = fileService.getAttachmentFileList(lastFlyTask.getRouteId(), ROUTE_TYPE).get(0);
-                if (ObjectUtil.isNull(routeFile)) throw new ServiceException("当前飞行任务关联航线不存在！");
-                if (!FlyTaskUtil.sendMessageToMcs(droneNumber, 4000, droneNumber, null == sessionId ? 1L : sessionId, McsRoute.builder()
-                        .historyBizId(lastFlyTask.getId()).category(0).elpLongitude(0d).elpLatitude(0d).minBattery(40)
-                        .kmzFiles(Collections.singletonList(routeFile.getFilePath())).build()))
-                    throw new ServiceException("发送飞行航线任务指令失败！");
-                //2.流程通知
-                nettyHandler.sendMessageToAll("发送飞行航线任务指令成功！");
-                //TODO 3.消息收集到es
+                if (lastFlyTask.getIsInterrupt()) {
+                    nettyHandler.sendMessageToAll("该飞行任务已中断，发送飞行航线任务指令失败！");
+                } else {
+                    //2.发送飞行航线
+                    File routeFile = fileService.getAttachmentFileList(lastFlyTask.getRouteId(), ROUTE_TYPE).get(0);
+                    if (ObjectUtil.isNull(routeFile)) throw new ServiceException("当前飞行任务关联航线不存在！");
+                    if (!FlyTaskUtil.sendMessageToMcs(droneNumber, 4000, droneNumber, null == sessionId ? 1L : sessionId, McsRoute.builder()
+                            .historyBizId(lastFlyTask.getId()).category(0).elpLongitude(0d).elpLatitude(0d).minBattery(40)
+                            .kmzFiles(Collections.singletonList(routeFile.getFilePath())).build()))
+                        throw new ServiceException("发送飞行航线任务指令失败！");
+                    //3.流程通知
+                    nettyHandler.sendMessageToAll("发送飞行航线任务指令成功！");
+                }
+                //TODO 4.消息收集到es
                 break;
             case 6007:
                 logger.info("6007：MCS航线解析成功通知");
-                if (!FlyTaskUtil.sendMessageToMcs(droneNumber, 4002, droneNumber, null == sessionId ? 1L : sessionId, null))
-                    throw new ServiceException("发送开始飞行任务指令失败！");
-                //2.流程通知
-                nettyHandler.sendMessageToAll("发送开始飞行任务指令成功！");
-                //3.更新飞行开始时间
+                //1.校验是否属于中断任务
                 lastFlyTask = flyTaskService.getLastFlyTask();
-                flyTaskService.lambdaUpdate().eq(FlyTask::getId, lastFlyTask.getId()).set(FlyTask::getFlyStartTime, LocalDateTime.now()).update();
-                //4.标识无人机起飞，无法中断飞行任务
-                redisCache.setCacheObject("fly_task:interrupt_task:" + lastFlyTask.getId(), 1, 3, TimeUnit.HOURS);
-                //TODO 4.消息收集到es
+                if (lastFlyTask.getIsInterrupt()) {
+                    nettyHandler.sendMessageToAll("该飞行任务已中断，发送开始飞行任务指令失败！");
+                } else {
+                    if (!FlyTaskUtil.sendMessageToMcs(droneNumber, 4002, droneNumber, null == sessionId ? 1L : sessionId, null))
+                        throw new ServiceException("发送开始飞行任务指令失败！");
+                    //2.流程通知
+                    nettyHandler.sendMessageToAll("发送开始飞行任务指令成功！");
+                    //3.更新飞行开始时间
+                    flyTaskService.lambdaUpdate().eq(FlyTask::getId, lastFlyTask.getId()).set(FlyTask::getFlyStartTime, LocalDateTime.now()).update();
+                    //4.标识无人机起飞，无法中断飞行任务
+                    redisCache.setCacheObject("fly_task:interrupt_task:" + lastFlyTask.getId(), 1, 3, TimeUnit.HOURS);
+                }
+                //TODO 5.消息收集到es
                 break;
             case 6002:
                 logger.info("6002：无人机起飞成功通知");
