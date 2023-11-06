@@ -7,9 +7,9 @@ spring:
       max-request-size: 200MB # 单次请求文件总大小
   #redis
   redis:
-    host: 47.99.163.33
+    host: 192.16.28.226
     port: 6379
-    password: 123456
+    password: Sne@2023
     database: 1
     lettuce:
       pool:
@@ -38,7 +38,7 @@ mybatis-plus:
 
 #mqtt配置
 mqtt:
-  broker: tcp://47.99.163.33:1883
+  broker: tcp://192.16.28.226:1883
   clientId: mqtt_move_hangar_mac_local
   username:
   password:
@@ -55,7 +55,7 @@ mqtt:
 
 # Minio配置
 minio:
-  url: http://47.99.163.33:9000
+  url: http://192.16.28.226:9000
   accessKey: minioadmin
   secretKey: minioadmin
   bucketName: dock-bucket

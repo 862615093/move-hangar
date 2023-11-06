@@ -5,6 +5,15 @@ server:
 spring:
   profiles:
     active: dev
+  data:
+    elasticsearch:
+      hosts: 192.16.28.226
+      port: 9200
+      maxConnectNum: 20
+      maxConnectPerRoute: 20
+      connectTimeOut: 6000
+      socketTimeOut: 6000
+      connectionRequestTimeOut: 6000
 netty:
   port: 1314
 logging:
