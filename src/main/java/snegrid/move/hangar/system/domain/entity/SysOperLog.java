@@ -1,7 +1,7 @@
 package snegrid.move.hangar.system.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import snegrid.move.hangar.annotation.Excel;
+import snegrid.move.hangar.system.annotation.Excel;
 import snegrid.move.hangar.base.BaseEntity;
 
 import java.util.Date;

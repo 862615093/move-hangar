@@ -2,7 +2,7 @@ package snegrid.move.hangar.system.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import snegrid.move.hangar.annotation.DataScope;
+import snegrid.move.hangar.system.annotation.DataScope;
 import snegrid.move.hangar.base.TreeSelect;
 import snegrid.move.hangar.constant.UserConstants;
 import snegrid.move.hangar.exception.ServiceException;

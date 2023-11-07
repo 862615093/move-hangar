@@ -21,7 +21,7 @@ public interface IElasticService<T> {
     boolean index(String indexName, String mappings);
 
     /**
-     * 创建索引
+     * 保存数据
      *
      * @param indexName
      * @param dataId

@@ -1,16 +1,20 @@
 package snegrid.move.hangar.netty.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.IdUtil;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import snegrid.move.hangar.business.domain.entity.EsFlyTaskLog;
+import snegrid.move.hangar.business.service.IElasticService;
 import snegrid.move.hangar.business.service.IFlyTaskService;
 import snegrid.move.hangar.netty.message.CommonMessage;
 import snegrid.move.hangar.netty.message.Message;
 import snegrid.move.hangar.netty.message.MessageType;
 import snegrid.move.hangar.netty.message.MessageUtil;
 import snegrid.move.hangar.netty.model.User;
+import snegrid.move.hangar.utils.common.DateUtils;
 import snegrid.move.hangar.utils.common.StringUtils;
 
 import java.util.List;
@@ -33,6 +37,8 @@ public class CommonNettyHandler implements NettyHandler {
     private final NettyUserManager nettyUserManager;
 
     private final IFlyTaskService flyTaskService;
+
+    private final IElasticService<EsFlyTaskLog> elasticService;
 
     @Handle(MessageType.LONGIN)
     public Message userLogin(String channelId, String userName, Long userId) {
@@ -133,6 +139,12 @@ public class CommonNettyHandler implements NettyHandler {
                     .put(MSG, msg);
             user.handleRequest(message);
         });
+        //消息收集到es
+        boolean flag = elasticService.insert("demo", IdUtil.fastUUID(),
+                EsFlyTaskLog.builder()
+//                            .flyTaskId(flyTaskService.getLastFlyTask().getId())
+                        .flyTaskId("123654789").logCode(0).logLevel(0).logContent("[平台]" + msg).logCreateTime(DateUtils.getTime()).build());
+        if (!flag) logger.error("sendMessageToAll()方法流程日志保存失败！");
     }
 
     public void sendMessageToAll(String msgType, String msg) {

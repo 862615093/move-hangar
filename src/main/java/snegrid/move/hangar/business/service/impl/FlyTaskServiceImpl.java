@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import snegrid.move.hangar.annotation.ProcessLogToEs;
 import snegrid.move.hangar.base.AjaxResult;
 import snegrid.move.hangar.business.domain.dto.FlyTaskDTO;
 import snegrid.move.hangar.business.domain.dto.FlyTaskPicListDTO;
@@ -72,6 +73,7 @@ public class FlyTaskServiceImpl extends ServiceImpl<FlyTaskMapper, FlyTask> impl
     }
 
     @Override
+    @ProcessLogToEs
     @Transactional(rollbackFor = Exception.class)
     public Message startFlyTask(User user, String routeId) {
         logger.info("startFlyTask()方法入参： user=【{}】, routeId=【{}】", user, routeId);
@@ -103,6 +105,7 @@ public class FlyTaskServiceImpl extends ServiceImpl<FlyTaskMapper, FlyTask> impl
     }
 
     @Override
+    @ProcessLogToEs
     @Transactional(rollbackFor = Exception.class)
     public Message endFlyTask(User user) {
         logger.info("endFlyTask()方法入参： user=【{}】", user);

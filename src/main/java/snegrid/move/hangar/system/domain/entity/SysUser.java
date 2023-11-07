@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import snegrid.move.hangar.annotation.Excel;
-import snegrid.move.hangar.annotation.Excel.Type;
-import snegrid.move.hangar.annotation.Excels;
+import snegrid.move.hangar.system.annotation.Excel;
+import snegrid.move.hangar.system.annotation.Excel.Type;
+import snegrid.move.hangar.system.annotation.Excels;
 import snegrid.move.hangar.base.BaseEntity;
 
 import javax.validation.constraints.Email;

@@ -16,6 +16,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class CommonSendCmd<T> implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 设备编号
      */

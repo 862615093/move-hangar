@@ -2,7 +2,7 @@ package snegrid.move.hangar.system.domain.entity;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import snegrid.move.hangar.annotation.Excel;
+import snegrid.move.hangar.system.annotation.Excel;
 import snegrid.move.hangar.base.BaseEntity;
 
 import javax.validation.constraints.NotBlank;

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import snegrid.move.hangar.annotation.DataScope;
+import snegrid.move.hangar.system.annotation.DataScope;
 import snegrid.move.hangar.constant.UserConstants;
 import snegrid.move.hangar.exception.ServiceException;
 import snegrid.move.hangar.security.util.SecurityUtils;

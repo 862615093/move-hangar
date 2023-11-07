@@ -1,4 +1,4 @@
-package snegrid.move.hangar.annotation;
+package snegrid.move.hangar.system.annotation;
 
 import snegrid.move.hangar.utils.poi.ExcelHandlerAdapter;
 
